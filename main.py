@@ -9,6 +9,12 @@ import numpy as np
 HIGH_COLOR = 'blue'
 LOW_COLOR = 'magenta'
 NEWLINE_DELAY = 0.5
+EXTRA_TRIES = 0
+
+
+KEYCOMBO = [3,4,80] # Level 1, 2 and 3 answers 
+
+RANDOM = False  
 
 """
     print_slow:
@@ -73,7 +79,7 @@ def game_init(start_level):
     time.sleep(NEWLINE_DELAY)
     click.echo("")
 
-    if click.confirm("Ready to start?"):
+    if click.confirm("Ready to start?", default=True):
         print()
         game_loop(start_level)
     print_slow("Feel free to come back and try later!")
@@ -86,14 +92,16 @@ def final_end(level):
 def game_end(level, guess_tries, ideal_tries):
     print_slow(f"Congrats!! You guessed the password in {guess_tries}.")
     if ideal_tries >= guess_tries:      
-        print_slow("You were able to get it within the ideal number of tries.")
+        if EXTRA_TRIES == 0:
+            print_slow("You were able to get it within the ideal number of tries.")
     else: 
         print_slow(f"Congrats!! You guessed the password in {guess_tries}.")
+        print_slow(f"The password is {KEYCOMBO[level]}!")
 
     if level == 2:
         final_end(level)
 
-    if click.confirm("Do you want to try the next level?"):
+    if click.confirm("Do you want to try the next level?", default=True):
         clear()
         game_loop(level+1)
     final_end(level)
@@ -104,11 +112,15 @@ def game_loop(level):
 
     ideal_tries = math.ceil(math.log2(high_bound+1))
 
+    ideal_tries = ideal_tries + EXTRA_TRIES # Adding Extra tries to make it easier
     print_slow("Try to get it in " + str(ideal_tries) + " or less guesses.")
     click.echo("")
     
-    answer = random.randint(low_bound, high_bound + 1)
-
+    
+    if RANDOM:
+        answer = random.randint(low_bound, high_bound + 1)
+    else:
+        answer = KEYCOMBO[level]
     guess = -1
     while(not check_bound(guess, high_bound, low_bound)):
         guess = click.prompt("Please enter the password", type=int)
