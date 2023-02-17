@@ -56,18 +56,22 @@ def levels(level):
     if level == 0:
         return (1, 10)
     elif level == 1:
-        return (1, 20)
-    elif level == 2:
-        return (1, 50)
+        return (1, 10)
     else:
-        return (1, 100)
+        return (1, 99)
 
 
 
-def game_init(start_level):   
+############# commands ###################
+
+@click.command()
+@click.option('-s', '--start_level', default=0)
+@click.option('-e', '--extra_guess', default=0)
+@click.option('-r', '--randomize', default=False)
+def game_init(start_level, extra_guess, randomize):   
     clear()
     click.secho('\n\n\n')
-    click.secho('Crack the Code\n'.center(130), fg='green', blink=True, bold=True)
+    click.secho('Crack the Code\n'.center(50), fg='green', blink=True, bold=True)
     click.secho('WELCOME Detective!\n',fg='green')
     click.secho('Mission:\n',fg='green')
 
@@ -81,43 +85,45 @@ def game_init(start_level):
 
     if click.confirm("Ready to start?", default=True):
         print()
-        game_loop(start_level)
+        game_loop(start_level, extra_guess, randomize)
     print_slow("Feel free to come back and try later!")
 
 def final_end(level):
     print_slow(f"Great job you passed {level + 1} levels!")
-    print_slow("You learned how 'binary searches' work.")
+
+    if (level==2):
+        print_slow("You figued out the password for the Lock!!")
+    else:
+        print_slow("Try again and see if you can pass all the levels!")
+    print_slow("You learned how 'binary searches' work. :)")
     exit()
 
-def game_end(level, guess_tries, ideal_tries):
-    print_slow(f"Congrats!! You guessed the password in {guess_tries}.")
-    if ideal_tries >= guess_tries:      
-        if EXTRA_TRIES == 0:
-            print_slow("You were able to get it within the ideal number of tries.")
-    else: 
-        print_slow(f"Congrats!! You guessed the password in {guess_tries}.")
-        print_slow(f"The password is {KEYCOMBO[level]}!")
+def game_end(level, guess_tries, ideal_tries, extra_guess, randomize):
+    print_slow(f"Congrats!! You guessed the password in {guess_tries} tries.")    
+    if guess_tries <= ideal_tries - extra_guess:
+        print_slow("You were able to get it within the ideal number of tries.")
+    print_slow(f"The password for {level+1} for lock is {KEYCOMBO[level]}!")
 
     if level == 2:
         final_end(level)
 
     if click.confirm("Do you want to try the next level?", default=True):
         clear()
-        game_loop(level+1)
+        game_loop(level+1, extra_guess, randomize)
     final_end(level)
 
-def game_loop(level):
+def game_loop(level, extra_guess, randomize):
     low_bound, high_bound = levels(level)
     print_slow("We know the password is between the numbers "+ str(low_bound) +" and " + str(high_bound) + ".")
 
     ideal_tries = math.ceil(math.log2(high_bound+1))
 
-    ideal_tries = ideal_tries + EXTRA_TRIES # Adding Extra tries to make it easier
+    ideal_tries = ideal_tries + extra_guess # Adding Extra tries to make it easier
     print_slow("Try to get it in " + str(ideal_tries) + " or less guesses.")
     click.echo("")
     
     
-    if RANDOM:
+    if randomize:
         answer = random.randint(low_bound, high_bound + 1)
     else:
         answer = KEYCOMBO[level]
@@ -151,7 +157,10 @@ def game_loop(level):
             print_slow("You tried too many times. The system has changed the password.")
             print_slow(f"Please retry. You have {ideal_tries} guesses.")
             click.echo("")
-            answer = random.randint(low_bound, high_bound + 1)
+            if randomize:
+                answer = random.randint(low_bound, high_bound + 1)
+            else:
+                answer = KEYCOMBO[level]
             guessed = []
             guess = click.prompt("Please enter the password", type=int)
             guessed.append(guess)
@@ -172,11 +181,11 @@ def game_loop(level):
         guess = click.prompt("Please enter the password", type=int)
         guessed.append(guess)
 
-    game_end(level, len(guessed), ideal_tries)
+    game_end(level, len(guessed), ideal_tries, extra_guess, random)
 
 
 
 
 if __name__ == '__main__':
-    game_init(0)
+    game_init()
 
