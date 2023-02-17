@@ -167,17 +167,21 @@ def game_loop(level, extra_guess, randomize, warn):
         if len(guessed) == ideal_tries:
             clear()
             click.echo("")
-            print_slow("ALERT: SYSTEM DETECTED HACKING ACTIVITY. RESETTING PASSWORD...", fg='red')
+            print_slow("ALERT: SYSTEM DETECTED HACKING ACTIVITY. RESETTING...", fg='red')
             click.echo("")
             time.sleep(1)
 
-            print_slow("You tried too many times. The system has changed the password.")
-            print_slow(f"Please retry. You have {ideal_tries} guesses.")
-            click.echo("")
             if randomize:
+                print_slow("You tried too many times. The system has changed the password.")
+                print_slow(f"Please retry. You have {ideal_tries} guesses.")
+                click.echo("")
                 answer = random.randint(low_bound, high_bound + 1)
             else:
-                answer = KEYCOMBO[level]
+                # answer = KEYCOMBO[level]
+                print_slow("You tried too many times. The system has restarted and you will need to start from stage 1.")
+                click.echo("")
+                game_loop(0, extra_guess, randomize, warn)
+                return
             guessed = []
             guess = click.prompt("Please enter the password", type=int)
             while(not check_bound(guess, high_bound, low_bound)):
