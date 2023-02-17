@@ -96,7 +96,7 @@ def final_end(level):
     print_slow(f"Great job you passed {level + 1} levels!")
 
     if (level==2):
-        print_slow("You figued out the password for the Lock!!")
+        print_slow("You figured out the password for the lock!!")
     else:
         print_slow("Try again and see if you can pass all the levels!")
     print_slow("You learned how 'binary searches' work. :)")
