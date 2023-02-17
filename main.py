@@ -68,24 +68,28 @@ def levels(level):
 @click.option('-s', '--start_level', default=0)
 @click.option('-e', '--extra_guess', default=0)
 @click.option('-r', '--randomize', default=False)
-def game_init(start_level, extra_guess, randomize):   
+@click.option('-w', '--warn', default=False)
+def game_init(start_level, extra_guess, randomize, warn):   
     clear()
     click.secho('\n\n\n')
     click.secho('Crack the Code\n'.center(50), fg='green', blink=True, bold=True)
     click.secho('WELCOME Detective!\n',fg='green')
     click.secho('Mission:\n',fg='green')
 
+    print_slow('Our intel tells us that the combo to the lock is the same as their digital password.')
     print_slow('We need your help to crack the password.')
     time.sleep(NEWLINE_DELAY)
-    print_slow("The password is a number. We will let you know how small and large it can be.")
+    print_slow("The password is a series of numbers. For each number, we will let you know the smallest and largest possible number.")
+    click.echo("")
     time.sleep(NEWLINE_DELAY)
     print_slow("Try to guess the password, but be careful, too many guesses and the system will reset!")
+    print_slow("Make sure to pay attention to whether your guess was too high or low!")
     time.sleep(NEWLINE_DELAY)
     click.echo("")
 
     if click.confirm("Ready to start?", default=True):
         print()
-        game_loop(start_level, extra_guess, randomize)
+        game_loop(start_level, extra_guess, randomize, warn)
     print_slow("Feel free to come back and try later!")
 
 def final_end(level):
@@ -98,21 +102,26 @@ def final_end(level):
     print_slow("You learned how 'binary searches' work. :)")
     exit()
 
-def game_end(level, guess_tries, ideal_tries, extra_guess, randomize):
+def game_end(level, guess_tries, ideal_tries, extra_guess, randomize, warn):
     print_slow(f"Congrats!! You guessed the password in {guess_tries} tries.")    
     if guess_tries <= ideal_tries - extra_guess:
         print_slow("You were able to get it within the ideal number of tries.")
-    print_slow(f"The password for {level+1} for lock is {KEYCOMBO[level]}!")
+    click.echo("")
+    if level == 2:
+        print_slow(f"The password for entries 3 and 4 in the lock is {KEYCOMBO[level]}!", fg='red')
+    else:
+        print_slow(f"The password for entry {level+1} in the lock is {KEYCOMBO[level]}!", fg='red')
+    click.echo("")
 
     if level == 2:
         final_end(level)
 
     if click.confirm("Do you want to try the next level?", default=True):
         clear()
-        game_loop(level+1, extra_guess, randomize)
+        game_loop(level+1, extra_guess, randomize, warn)
     final_end(level)
 
-def game_loop(level, extra_guess, randomize):
+def game_loop(level, extra_guess, randomize, warn):
     low_bound, high_bound = levels(level)
     print_slow("We know the password is between the numbers "+ str(low_bound) +" and " + str(high_bound) + ".")
 
@@ -147,6 +156,14 @@ def game_loop(level, extra_guess, randomize):
             print_slow("TOO SMALL.", fg=LOW_COLOR)
         time.sleep(NEWLINE_DELAY)
 
+        if len(guessed) == ideal_tries - 2 and warn:
+            click.echo("")
+            print_slow("Detecting potential suspicious activity. Tightening security...", fg='red')
+            click.echo("")
+            time.sleep(1)
+            print_slow("The system is onto you. You have 2 more tries before the system acts.")
+            click.echo("")
+
         if len(guessed) == ideal_tries:
             clear()
             click.echo("")
@@ -163,8 +180,10 @@ def game_loop(level, extra_guess, randomize):
                 answer = KEYCOMBO[level]
             guessed = []
             guess = click.prompt("Please enter the password", type=int)
+            while(not check_bound(guess, high_bound, low_bound)):
+                guess = click.prompt("Please enter the password", type=int)
             guessed.append(guess)
-            break
+            continue
         
         print_slow("Previous Guesses: ", nl=False)
         for i in range(len(guessed)):
@@ -179,9 +198,11 @@ def game_loop(level, extra_guess, randomize):
         click.echo("\n")
 
         guess = click.prompt("Please enter the password", type=int)
+        while(not check_bound(guess, high_bound, low_bound)):
+            guess = click.prompt("Please enter the password", type=int)
         guessed.append(guess)
 
-    game_end(level, len(guessed), ideal_tries, extra_guess, random)
+    game_end(level, len(guessed), ideal_tries, extra_guess, randomize, warn)
 
 
 
