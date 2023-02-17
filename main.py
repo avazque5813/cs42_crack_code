@@ -81,6 +81,7 @@ def game_init(start_level):
 def final_end(level):
     print_slow(f"Great job you passed {level + 1} levels!")
     print_slow("You learned how 'binary searches' work.")
+    exit()
 
 def game_end(level, guess_tries, ideal_tries):
     print_slow(f"Congrats!! You guessed the password in {guess_tries}.")
@@ -107,7 +108,10 @@ def game_loop(level):
     click.echo("")
     
     answer = random.randint(low_bound, high_bound + 1)
-    guess = click.prompt("Please enter the password", type=int)
+
+    guess = -1
+    while(not check_bound(guess, high_bound, low_bound)):
+        guess = click.prompt("Please enter the password", type=int)
     guessed = []
     guessed.append(guess)
 
