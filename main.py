@@ -39,7 +39,7 @@ def loading_bar():
         ) as items:
         for _ in items:
             time.sleep(
-                np.random.exponential(np.random.choice([0.01, 0.015, 0.02]))
+                np.random.exponential(np.random.choice([0.005, 0.01, 0.015]))
             )
 
 def clear():
@@ -79,7 +79,7 @@ def game_init(start_level, extra_guess, randomize, warn):
     print_slow('Our intel tells us that the combo to the lock is the same as their digital password.')
     print_slow('We need your help to crack the password.')
     time.sleep(NEWLINE_DELAY)
-    print_slow("The password is a series of numbers. For each number, we will let you know the smallest and largest possible number.")
+    print_slow("The password is a list of numbers. For each number, we will let you know the smallest and largest possible number.")
     click.echo("")
     time.sleep(NEWLINE_DELAY)
     print_slow("Try to guess the password, but be careful, too many guesses and the system will reset!")
