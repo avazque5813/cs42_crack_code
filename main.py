@@ -87,9 +87,8 @@ def game_init(start_level, extra_guess, randomize, warn):
     time.sleep(NEWLINE_DELAY)
     click.echo("")
 
-    if click.confirm("Ready to start?", default=True):
-        print()
-        game_loop(start_level, extra_guess, randomize, warn)
+    time.sleep(1)
+    game_loop(start_level, extra_guess, randomize, warn)
     print_slow("Feel free to come back and try later!")
 
 def final_end(level):
@@ -113,15 +112,20 @@ def game_end(level, guess_tries, ideal_tries, extra_guess, randomize, warn):
         print_slow(f"The password for entry {level+1} in the lock is {KEYCOMBO[level]}!", fg='red')
     click.echo("")
 
+    time.sleep(1)
+
     if level == 2:
         final_end(level)
 
-    if click.confirm("Do you want to try the next level?", default=True):
-        clear()
-        game_loop(level+1, extra_guess, randomize, warn)
+    print_slow("Starting up the next level...")
+    time.sleep(1)
+    game_loop(level+1, extra_guess, randomize, warn)
     final_end(level)
 
 def game_loop(level, extra_guess, randomize, warn):
+    click.echo("")
+    print_slow(f"###### LEVEL {level + 1} ######")
+    click.echo("")
     low_bound, high_bound = levels(level)
     print_slow("We know the password is between the numbers "+ str(low_bound) +" and " + str(high_bound) + ".")
 
