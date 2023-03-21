@@ -96,7 +96,7 @@ def game_init(start_level, extra_guess, randomize, warn, hard):
     click.secho('WELCOME Detective!\n',fg='green')
     click.secho('Mission:\n',fg='green')
 
-    print_slow('Our intel tells us that the combo to the lock is the same as their digital password.')
+    print_slow('Our intel tells us that the computer holds the password.')
     print_slow('We need your help to crack the password.')
     time.sleep(NEWLINE_DELAY)
     print_slow("The password is a list of numbers. For each number, we will let you know the smallest and largest possible number.")
