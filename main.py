@@ -5,6 +5,7 @@ import math
 import random
 import os
 import numpy as np
+from pyfiglet import Figlet
 
 HIGH_COLOR = 'blue'
 LOW_COLOR = 'magenta'
@@ -13,8 +14,13 @@ EXTRA_TRIES = 0
 
 
 KEYCOMBO = [3,4,80] # Level 1, 2 and 3 answers 
+# Index 0 contains the digit of first slot in lock 
+# Index 1 contains the digit of second slot in lock
+# Index 2 contains the digits of slots three and four in lock 
 
-RANDOM = False  
+F_ASCII_ART = Figlet(font='doh') # TEXT to ASCII ART
+# More info: http://www.jave.de/figlet/fonts.html
+# Fonts examples:  http://www.jave.de/figlet/fonts/overview.html 
 
 """
     print_slow:
@@ -52,12 +58,16 @@ def check_bound(user_input, high, low):
         return False
     return True
 
-def levels(level):
+def levels(level, hard):
     if level == 0:
         return (1, 10)
     elif level == 1:
+        if hard: 
+            return (1, 100)
         return (1, 10)
     else:
+        if hard: 
+            return (1, 1000)
         return (1, 99)
 
 
@@ -65,11 +75,21 @@ def levels(level):
 ############# commands ###################
 
 @click.command()
-@click.option('-s', '--start_level', default=0)
-@click.option('-e', '--extra_guess', default=0)
-@click.option('-r', '--randomize', default=False)
-@click.option('-w', '--warn', default=False)
-def game_init(start_level, extra_guess, randomize, warn):   
+@click.option('-s', '--start_level', default=0, 
+              help="Set the start level. Possible levels are 0, 1, and 2.\n"+"Default is 0.\n")
+@click.option('-e', '--extra_guess', default=0,
+              help="You can increase the guess limit for each of the levels.\n"
+              +"Default is 0 extra guesses.")
+@click.option('-r', '--randomize', default=False,
+              help="Enable randomization of password for each level.\n" + 
+              "Default password for each level is same as keycombo password.\n")
+@click.option('-w', '--warn', default=True, 
+              help="Gives players warning message when they have 2 guesses left.\n"+ "Default is warnings are on.")
+@click.option('-hd', '--hard', default=False, 
+              help="Enables hard mode. Changes bounds for levels to: "+
+              "1-10, 1-100, 1-1000\n" + "Default this is off.\n" +
+              "Note: Recommend you turn on random if hard mode is turned on.\n")
+def game_init(start_level, extra_guess, randomize, warn, hard):   
     clear()
     click.secho('\n\n\n')
     click.secho('Crack the Code\n'.center(50), fg='green', blink=True, bold=True)
@@ -88,10 +108,15 @@ def game_init(start_level, extra_guess, randomize, warn):
     click.echo("")
 
     time.sleep(1)
-    game_loop(start_level, extra_guess, randomize, warn)
+    game_loop(start_level, extra_guess, randomize, warn, hard)
     print_slow("Feel free to come back and try later!")
 
 def final_end(level):
+    """
+    This is called in two cases:
+    1. All levels passed
+    2. Failed to pass level and not trying again
+    """
     print_slow(f"Great job you passed {level + 1} levels!")
 
     if (level==2):
@@ -101,15 +126,22 @@ def final_end(level):
     print_slow("You learned how 'binary searches' work. :)")
     exit()
 
-def game_end(level, guess_tries, ideal_tries, extra_guess, randomize, warn):
+def level_end(level, guess_tries, ideal_tries, extra_guess, randomize, warn, hard):
+    """
+        This is called at the end of each level. 
+    """
     print_slow(f"Congrats!! You guessed the password in {guess_tries} tries.")    
     if guess_tries <= ideal_tries - extra_guess:
         print_slow("You were able to get it within the ideal number of tries.")
     click.echo("")
+
     if level == 2:
         print_slow(f"The password for entries 3 and 4 in the lock is {KEYCOMBO[level]}!", fg='red')
+        print(F_ASCII_ART.renderText(f"{KEYCOMBO[level]}").rstrip())
     else:
-        print_slow(f"The password for entry {level+1} in the lock is {KEYCOMBO[level]}!", fg='red')
+        print_slow(f"The password for entry {level+1} in the lock is {KEYCOMBO[level]}. ", fg='red')
+        print(F_ASCII_ART.renderText(f"{KEYCOMBO[level]}").rstrip())
+
     click.echo("")
 
     time.sleep(1)
@@ -119,16 +151,18 @@ def game_end(level, guess_tries, ideal_tries, extra_guess, randomize, warn):
 
     print_slow("Starting up the next level...")
     time.sleep(1)
-    game_loop(level+1, extra_guess, randomize, warn)
+    game_loop(level+1, extra_guess, randomize, warn, hard)
     final_end(level)
 
-def game_loop(level, extra_guess, randomize, warn):
+def game_loop(level, extra_guess, randomize, warn, hard):
     click.echo("")
     print_slow(f"###### LEVEL {level + 1} ######")
     click.echo("")
-    low_bound, high_bound = levels(level)
+    low_bound, high_bound = levels(level, hard)
     print_slow("We know the password is between the numbers "+ str(low_bound) +" and " + str(high_bound) + ".")
 
+
+    # Calculating the ideal number of tries by taking ceiling of log base 2 of upper bound + 1
     ideal_tries = math.ceil(math.log2(high_bound+1))
 
     ideal_tries = ideal_tries + extra_guess # Adding Extra tries to make it easier
@@ -184,7 +218,7 @@ def game_loop(level, extra_guess, randomize, warn):
                 # answer = KEYCOMBO[level]
                 print_slow("You tried too many times. The system has restarted and you will need to start from stage 1.")
                 click.echo("")
-                game_loop(0, extra_guess, randomize, warn)
+                game_loop(0, extra_guess, randomize, warn, hard)
                 return
             guessed = []
             guess = click.prompt("Please enter the password", type=int)
@@ -210,7 +244,7 @@ def game_loop(level, extra_guess, randomize, warn):
             guess = click.prompt("Please enter the password", type=int)
         guessed.append(guess)
 
-    game_end(level, len(guessed), ideal_tries, extra_guess, randomize, warn)
+    level_end(level, len(guessed), ideal_tries, extra_guess, randomize, warn, hard)
 
 
 
