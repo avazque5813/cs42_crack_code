@@ -18,9 +18,13 @@ python main.py
 Optional flags:
 
 -s sets the start level
+
 -e lets you increase guess limit
+
 -r randomizes what the level password is
+
 -w Sets if warnings are enabled
+
 -hd Enables hard mode 
 
 --help For more help text in terminal. 
