@@ -164,8 +164,9 @@ def game_loop(level, extra_guess, randomize, warn, hard):
 
     # Calculating the ideal number of tries by taking ceiling of log base 2 of upper bound + 1
     ideal_tries = math.ceil(math.log2(high_bound+1))
-
-    ideal_tries = ideal_tries + extra_guess # Adding Extra tries to make it easier
+    #ideal_tries = ideal_tries + extra_guess # Adding Extra tries to make it easier
+    if level == 2:
+        ideal_tries += 2 #added two more tries for the last level
     print_slow("Try to get it in " + str(ideal_tries) + " or less guesses.")
     click.echo("")
     
